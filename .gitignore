@@ -1,0 +1,8 @@
+data/
+fixtures.csv
+__pycache__/
+model_params.json
+team_ratings.csv
+backtest_*.csv
+predictions_*.csv
+*.xlsx

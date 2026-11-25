@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Over/Under 2.5 Picks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE work tool, matchday practical
+   IDEA a football pools coupon: one ruled line per fixture, the mark you make is the pick
+   PICTURE the coupon itself, then the running P/L curve of settled picks
+   COLOUR pitch green band, white coupon, ink; orange for OVER, blue for UNDER
+   TYPE Barlow Condensed (programme lettering) + Inter
+   LAYOUT green band with title and record figures; coupon full width beneath; record chart and log; notes */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0c1410);--ink:light-dark(#12201a,#e8efe9);--mute:light-dark(#5b6b62,#9db0a4);--line:light-dark(#d9e2dc,#24342b);--pitch:light-dark(#0e5f36,#0b3f25);--paper:light-dark(#f4f8f5,#121d17);--over:#e8590c;--under:light-dark(#1f5fd1,#5b8ff0);--win:light-dark(#0e7a43,#4cc488);--loss:light-dark(#b42318,#f07a6e)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,.num{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;letter-spacing:-.01em;line-height:1.05;margin:0}
+h1{font-size:clamp(36px,6vw,52px);text-wrap:balance}
+h2{font-size:30px;margin-bottom:14px}
+.band{padding:clamp(24px,4vw,48px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.top{background:var(--pitch);color:#fff}
+.top p{margin:8px 0 0;color:#cfe5d7;max-width:62ch}
+.head{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:end}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(6.5em,1fr));gap:10px}
+.fig1{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 14px}
+.fig1 .num{font-size:clamp(28px,4vw,38px);white-space:nowrap}
+.fig1 span{display:block;font-size:13px;color:#cfe5d7}
+.coupon{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.day{padding:10px 16px;font-weight:600;border-bottom:2px solid var(--ink);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.day small{color:var(--mute);font-weight:500}
+.row{display:grid;grid-template-columns:4.2em minmax(0,1fr) 7.5em 6.5em 15em;gap:14px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg)}
+.row:last-child{border-bottom:0}
+.t{font-family:"Barlow Condensed",sans-serif;font-size:26px;font-weight:600;white-space:nowrap}
+.m b{font-weight:600}.m div{font-size:13px;color:var(--mute)}
+.pick{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;border-radius:8px;border:2px solid currentColor;font-family:"Barlow Condensed",sans-serif;font-size:22px;font-weight:700;white-space:nowrap}
+.pick.OVER{color:var(--over)}.pick.UNDER{color:var(--under)}
+.ba .num{font-size:28px;white-space:nowrap}.ba div,.st div{font-size:13px;color:var(--mute);white-space:nowrap}
+.st{font-variant-numeric:tabular-nums}.st b{font-weight:600;white-space:nowrap}
+.empty{padding:28px 18px;color:var(--mute);background:var(--bg)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:start}
+.fig{position:relative;height:300px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+svg text{font:13px Inter,sans-serif;fill:var(--mute);paint-order:stroke;stroke:var(--paper);stroke-width:4px}
+.scroll{overflow-x:auto;max-height:360px;overflow-y:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:var(--paper);font-weight:600}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.w{color:var(--win);font-weight:600}.l{color:var(--loss);font-weight:600}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(16em,1fr));gap:20px 32px;color:var(--ink)}
+.notes p{margin:4px 0 0;color:var(--mute);font-size:15px}
+.notes b{font-weight:600}
+.foot{border-top:1px solid var(--line);color:var(--mute);font-size:13px}
+.legend{font-size:13px;color:var(--mute);margin:10px 2px 0}
+@media(max-width:820px){.head,.grid2{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.figs{grid-template-columns:1fr 1fr}.row{grid-template-columns:3.4em auto minmax(0,1fr);grid-template-areas:"t m m" ". pk ba" ". st st";row-gap:8px;column-gap:12px}.t{grid-area:t;font-size:22px}.m{grid-area:m}.pk{grid-area:pk}.ba{grid-area:ba}.st{grid-area:st}.st div{white-space:normal}.hm{display:none}.pick{font-size:19px;height:36px;padding:0 10px}}
+@media(min-width:601px){.pick{width:100%}}
+</style>
+</head>
+<body>
+<header class="band top">
+ <div class="wrap head">
+  <div>
+   <h1 id="title">Over/Under 2.5 picks</h1>
+   <p id="sub">GAP ratings model (Wheatcroft, 2020): shots and corners pressure, blended with the market price.</p>
+  </div>
+  <div class="figs" id="figs"></div>
+ </div>
+</header>
+
+<main>
+ <section class="band"><div class="wrap">
+  <h2>Upcoming selections</h2>
+  <div class="coupon" id="coupon"><div class="empty">Loading selections…</div></div>
+  <p class="legend">Back on Betfair only at the <b>back at</b> price or bigger: that's where the edge clears commission and the minimum edge. "Best book now" is the best bookmaker price when the picks were made.</p>
+ </div></section>
+
+ <section class="band" style="padding-top:0"><div class="wrap grid2">
+  <div>
+   <h2 id="recTitle">Record</h2>
+   <div class="fig"><svg id="chart" role="img" aria-label="Cumulative profit in points"></svg></div>
+   <p class="legend">Level 1-point stakes at the best price recorded with each pick, 5% commission on winnings.</p>
+  </div>
+  <div>
+   <h2>Settled picks</h2>
+   <div class="scroll"><table><thead><tr><th>Date</th><th>Match</th><th>Pick</th><th class="r">Price</th><th class="r hm">Goals</th><th class="r">P/L</th></tr></thead><tbody id="log"><tr><td colspan="6">None settled yet.</td></tr></tbody></table></div>
+  </div>
+ </div></section>
+
+ <section class="band" style="padding-top:0"><div class="wrap">
+  <h2>How the picks are made</h2>
+  <div class="notes">
+   <div><b>Pressure, not goals</b><p>Every team carries home and away attacking and defensive ratings in shots plus corners. They update after each match; goals are too noisy to predict from.</p></div>
+   <div><b>Nudging the market</b><p>The chance of over 2.5 comes from a logistic regression on the match pressure and the market's own price, so the model only moves the market a little.</p></div>
+   <div><b>Paper's rules</b><p>No picks until both teams have played six league games, and none in either team's last six. Ratings refresh with each round of results.</p></div>
+   <div><b>Small edge, real variance</b><p>The paper made about 0.8% per bet at the best bookmaker prices and lost at average prices. Treat the record here as the real test.</p></div>
+  </div>
+ </div></section>
+</main>
+
+<footer class="band foot"><div class="wrap" id="foot">Not betting advice. Gamble responsibly.</div></footer>
+
+<script>
+{
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct=v=>(v*100).toFixed(1)+'%';
+const fmtDay=d=>new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+const shortDay=d=>new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+let hist=[];
+
+function figs(data){
+  const h=data.history||[],n=h.length,w=h.filter(x=>x.won).length,pl=h.reduce((s,x)=>s+x.pl,0);
+  const items=[[String(n),'settled'],[n?pct(w/n):'–','strike rate'],[n?(pl>=0?'+':'')+pl.toFixed(2):'–','points P/L'],[n?(pl/n*100>=0?'+':'')+(pl/n*100).toFixed(1)+'%':'–','ROI']];
+  document.getElementById('figs').innerHTML=items.map(([v,l])=>`<div class="fig1"><div class="num">${esc(v)}</div><span>${esc(l)}</span></div>`).join('');
+}
+
+function coupon(data){
+  const el=document.getElementById('coupon'),u=data.upcoming||[];
+  if(!u.length){el.innerHTML=`<div class="empty">No selections right now. ${data.updated?'Checked '+esc(data.fixtures_checked)+' fixtures at '+esc(data.updated)+'.':'The first run hasn\'t happened yet.'} New picks appear when the next round's fixtures and prices are out.</div>`;return}
+  const days=[...new Set(u.map(x=>x.date))];
+  el.innerHTML=days.map(d=>{
+    const rows=u.filter(x=>x.date===d);
+    return `<div class="day">${esc(fmtDay(d))}<small>${rows.length} pick${rows.length>1?'s':''}</small></div>`+rows.map(x=>`
+    <div class="row">
+      <div class="t">${esc(x.time||'')}</div>
+      <div class="m"><b>${esc(x.home)} v ${esc(x.away)}</b><div>${esc(x.league_name)}</div></div>
+      <div class="pk"><span class="pick ${x.side==='OVER'?'OVER':'UNDER'}">${x.side==='OVER'?'Over':'Under'} 2.5</span></div>
+      <div class="ba"><div>Back at</div><span class="num">${esc(Number(x.back_at).toFixed(2))}+</span></div>
+      <div class="st"><b>${esc(pct(x.p))}</b> model · fair ${esc(Number(x.fair).toFixed(2))}<div>Best book now ${esc(Number(x.price).toFixed(2))} · edge ${esc(pct(x.edge))}</div></div>
+    </div>`).join('')}).join('');
+}
+
+function log(data){
+  hist=(data.history||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
+  const tb=document.getElementById('log');
+  if(!hist.length)return;
+  tb.innerHTML=hist.slice().reverse().map(x=>`<tr><td>${esc(shortDay(x.date))}</td><td>${esc(x.home)} v ${esc(x.away)}</td><td>${x.side==='OVER'?'Over':'Under'}</td><td class="r">${esc(Number(x.price).toFixed(2))}</td><td class="r hm">${esc(x.goals)}</td><td class="r ${x.won?'w':'l'}">${x.pl>=0?'+':''}${esc(Number(x.pl).toFixed(2))}</td></tr>`).join('');
+  const pl=hist.reduce((s,x)=>s+x.pl,0);
+  document.getElementById('recTitle').textContent=`Record: ${pl>=0?'+':''}${pl.toFixed(2)} points from ${hist.length} picks`;
+}
+
+const s=document.getElementById('chart');
+function draw(){
+  const W=s.clientWidth,H=s.clientHeight;if(!W||!H)return;
+  if(hist.length<2){s.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle">The P/L line appears once picks settle.</text>`;return}
+  let c=0;const pts=[0,...hist.map(x=>c+=x.pl)];
+  const L=44,R=16,T=18,B=30,lo=Math.min(0,...pts),hi=Math.max(0,...pts),span=(hi-lo)||1;
+  const X=i=>L+i*(W-L-R)/(pts.length-1),Y=v=>T+(hi-v)*(H-T-B)/span;
+  const step=Math.max(1,Math.pow(10,Math.floor(Math.log10(span)))*(span/Math.pow(10,Math.floor(Math.log10(span)))>4?1:0.5));
+  let g='';for(let v=Math.ceil(lo/step)*step;v<=hi+1e-9;v+=step){g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${+v.toFixed(1)}</text>`}
+  const line=pts.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('');
+  const area=`${line}L${X(pts.length-1)},${Y(0)}L${X(0)},${Y(0)}Z`;
+  const last=pts[pts.length-1],col=last>=0?'var(--win)':'var(--loss)';
+  s.innerHTML=g+`<line x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--ink)"/><path d="${area}" fill="${col}" opacity=".14"/><path d="${line}" fill="none" stroke="${col}" stroke-width="2.5"/><circle cx="${X(pts.length-1)}" cy="${Y(last)}" r="4.5" fill="${col}"/><text x="${L}" y="${H-8}">${esc(shortDay(hist[0].date))}</text><text x="${W-R}" y="${H-8}" text-anchor="end">${esc(shortDay(hist[hist.length-1].date))} · ${hist.length} picks</text>`;
+}
+const ro=new ResizeObserver(draw);ro.observe(s);
+
+function render(data){
+  figs(data);coupon(data);log(data);draw();
+  const m=data.model||{},st=data.settings||{};
+  if(data.updated)document.getElementById('sub').textContent=`Updated ${data.updated}. Ratings include results to ${m.last_match||'–'}. Picks need a ${pct(st.min_edge||0)} edge after ${pct(st.commission||0)} commission, odds ${st.min_odds}–${st.max_odds}.`;
+  if(m.alpha!==undefined)document.getElementById('foot').textContent=`Model: ${m.measure}, λ ${(+m.lam).toFixed(3)}, φ1 ${(+m.phi1).toFixed(3)}, φ2 ${(+m.phi2).toFixed(3)}, α ${(+m.alpha).toFixed(3)}, β1 ${(+m.beta1).toFixed(4)}, β2 ${(+m.beta2).toFixed(3)}, fitted on ${m.n_train} matches. Not betting advice. Gamble responsibly.`;
+}
+
+fetch('data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(render).catch(()=>render({upcoming:[],history:[]}));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+name: Update O/U 2.5 picks
+
+on:
+  schedule:
+    # Tuesdays and Fridays 10:43 UTC (10:43 UK in winter, 11:43 in summer).
+    # Tuesday covers midweek fixtures; Friday covers the weekend.
+    - cron: "43 10 * * 2,5"
+  workflow_dispatch:        # "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: picks
+  cancel-in-progress: false
+
+jobs:
+  picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Past seasons never change, so keep them between runs; the current season is re-downloaded every time.
+      - name: Cache football-data CSVs
+        uses: actions/cache@v4
+        with:
+          path: data
+          key: fd-${{ github.run_id }}
+          restore-keys: fd-
+
+      - name: Fit model and write picks
+        run: python gap_ou.py selections --json docs/data.json
+
+      - name: Commit picks
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data.json
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Picks update $(date -u +'%Y-%m-%d %H:%M')"
+          git push
