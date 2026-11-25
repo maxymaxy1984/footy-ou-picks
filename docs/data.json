@@ -1,1 +1,23 @@
-{"upcoming": [], "history": []}
+{
+ "updated": "2026-11-25 11:23",
+ "model": {
+  "measure": "shots_corners",
+  "lam": 1.4207670858358559,
+  "phi1": 0.8454248435606304,
+  "phi2": 0.19089081082498427,
+  "alpha": -2.4004066260565238,
+  "beta1": 0.0038397543382001115,
+  "beta2": 4.173424166354383,
+  "last_match": "2026-11-23",
+  "n_train": 18600
+ },
+ "settings": {
+  "commission": 0.05,
+  "min_edge": 0.02,
+  "min_odds": 1.4,
+  "max_odds": 4.0
+ },
+ "fixtures_checked": 8,
+ "upcoming": [],
+ "history": []
+}
