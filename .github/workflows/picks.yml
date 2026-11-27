@@ -5,6 +5,8 @@ on:
     # Tuesdays and Fridays 10:43 UTC (10:43 UK in winter, 11:43 in summer).
     # Tuesday covers midweek fixtures; Friday covers the weekend.
     - cron: "43 10 * * 2,5"
+    # Backup run the same afternoon, in case GitHub delays or skips the morning one.
+    - cron: "13 15 * * 2,5"
   workflow_dispatch:        # "Run workflow" button in the Actions tab
 
 permissions:
